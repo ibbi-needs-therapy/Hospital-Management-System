@@ -853,7 +853,7 @@ class AdminScreen : public Screen {
     static constexpr float ROW = 90.f;
 
     // 0-Patients 1-Doctors 2-Appts 3-Bills 4-AddDoctor 5-Report 6-Appearance
-    Table  mPatTable,mDocTable,mApptTable,mBillTable;
+    Table  mPatTable,mDocTable,mApptTable,mBillTable,mSecurityLogTable;
     Button mDischargeBtn,mRemoveDocBtn;
     
     int mThemeChoice = 1;
@@ -917,6 +917,32 @@ class AdminScreen : public Screen {
             const char* cells[]={id,pt?pt->getName().c_str():"N/A",amt,datebuf};
             Color hi=ovd?Theme::withAlpha(Theme::DANGER,20):Color{0,0,0,0};
             mBillTable.addRow(cells,4,hi);
+        }
+    }
+    void loadSecurityLogs() {
+        mSecurityLogTable.clearRows();
+        ifstream f("data/security_log.txt");
+        if (!f.is_open()) return;
+        string line;
+        while (getline(f, line)) {
+            if (line.empty()) continue;
+            size_t p1 = line.find(',');
+            if (p1 == string::npos) continue;
+            size_t p2 = line.find(',', p1 + 1);
+            if (p2 == string::npos) continue;
+            size_t p3 = line.find(',', p2 + 1);
+            if (p3 == string::npos) continue;
+            string datetime = line.substr(0, p1);
+            string user = line.substr(p1 + 1, p2 - p1 - 1);
+            string userId = line.substr(p2 + 1, p3 - p2 - 1);
+            string status = line.substr(p3 + 1);
+            char dtbuf[64], userbuf[32], uidbuf[16], statusbuf[32];
+            strncpy(dtbuf, datetime.c_str(), 63); dtbuf[63] = '\0';
+            strncpy(userbuf, user.c_str(), 31); userbuf[31] = '\0';
+            strncpy(uidbuf, userId.c_str(), 15); uidbuf[15] = '\0';
+            strncpy(statusbuf, status.c_str(), 31); statusbuf[31] = '\0';
+            const char* cells[] = {dtbuf, userbuf, uidbuf, statusbuf};
+            mSecurityLogTable.addRow(cells,4);
         }
     }
     void buildReport() {
@@ -991,15 +1017,16 @@ class AdminScreen : public Screen {
     void switchPage(int p) {
         this->mPage = p;
         this->mSidebar.setActive(p);
-        static const char* titles[] = { "All Patients", "All Doctors", "All Appointments", "Unpaid Bills", "Add Doctor", "Daily Report" };
+        static const char* titles[] = { "All Patients", "All Doctors", "All Appointments", "Security Logs", "Unpaid Bills", "Add Doctor", "Daily Report" };
         strncpy(this->mPageTitle, titles[p], 63);
         this->mDStatus[0] = '\0';
         switch (p) {
             case 0: this->loadPatients(); break;
             case 1: this->loadDoctors(); break;
             case 2: this->loadAppts(); break;
-            case 3: this->loadBills(); break;
-            case 5: this->buildReport(); break;
+            case 3: this->loadSecurityLogs(); break;
+            case 4: this->loadBills(); break;
+            case 6: this->buildReport(); break;
         }
     }
 
@@ -1016,6 +1043,8 @@ public:
         mDocTable.init({CX,78.f,CW,490.f},dCols,5);
         TableCol aCols[]={{"ID",70.f},{"Patient",250.f},{"Doctor",220.f},{"Date",120.f},{"Slot",100.f},{"Status",120.f}};
         mApptTable.init({CX,78.f,CW,490.f},aCols,6);
+        TableCol logCols[]={{"Date/Time",220.f},{"User",140.f},{"User ID",110.f},{"Event",120.f}};
+        mSecurityLogTable.init({CX,78.f,CW,490.f},logCols,4);
         TableCol bCols[]={{"ID",70.f},{"Patient",240.f},{"Amount",120.f},{"Status",110.f}};
         mBillTable.init({CX,78.f,CW,490.f},bCols,4);
 
@@ -1036,11 +1065,12 @@ public:
             {"All Patients",     [this]{switchPage(0);}},
             {"All Doctors",      [this]{switchPage(1);}},
             {"All Appointments", [this]{switchPage(2);}},
-            {"Unpaid Bills",     [this]{switchPage(3);}},
-            {"Add Doctor",       [this]{switchPage(4);}},
-            {"Daily Report",     [this]{switchPage(5);}},
+            {"Security Logs",    [this]{switchPage(3);}},
+            {"Unpaid Bills",     [this]{switchPage(4);}},
+            {"Add Doctor",       [this]{switchPage(5);}},
+            {"Daily Report",     [this]{switchPage(6);}},
         };
-        mSidebar.init("Admin Panel","  MediCore Admin",items,6,[this]{strncpy(mNextScreen,"login",31);});
+        mSidebar.init("Admin Panel","  MediCore Admin",items,7,[this]{strncpy(mNextScreen,"login",31);});
         switchPage(0);
     }
 
@@ -1051,8 +1081,9 @@ public:
             case 0: mPatTable.update();  mDischargeBtn.update(); break;
             case 1: mDocTable.update();  mRemoveDocBtn.update(); break;
             case 2: mApptTable.update(); break;
-            case 3: mBillTable.update(); break;
-            case 4: mDName.update();mDSpec.update();mDContact.update();mDPwd.update();mDFee.update();mDAddBtn.update(); break;
+            case 3: mSecurityLogTable.update(); break;
+            case 4: mBillTable.update(); break;
+            case 5: mDName.update();mDSpec.update();mDContact.update();mDPwd.update();mDFee.update();mDAddBtn.update(); break;
         }
     }
 
@@ -1072,8 +1103,9 @@ public:
             case 0: mPatTable.draw();  mDischargeBtn.draw(); break;
             case 1: mDocTable.draw();  mRemoveDocBtn.draw(); break;
             case 2: mApptTable.draw(); break;
-            case 3: mBillTable.draw(); break;
-            case 4: {
+            case 3: mSecurityLogTable.draw(); break;
+            case 4: mBillTable.draw(); break;
+            case 5: {
                 float ly = FY - 22.f;
                 drawLabel("Name",                   CX,         ly);
                 drawLabel("Specialization",          CX+300.f,   ly);
@@ -1086,7 +1118,7 @@ public:
                 if(mDStatus[0]) Theme::DrawText(mDStatus,(int)CX,(int)(ly+ROW*2.85f),Theme::FS_SMALL,mDStatusCol);
                 mDAddBtn.draw(); break;
             }
-            case 5: {
+            case 6: {
                 const char* p=mReportBuf; float ty=82.f; char line[256]{}; int li=0;
                 while(*p){ if(*p=='\n'||li>=254){line[li]='\0';Theme::DrawText(line,(int)CX,(int)ty,Theme::FS_BODY,Theme::TXT_PRI);ty+=Theme::FS_BODY+5;li=0;}else{line[li++]=*p;}p++;}
                 line[li]='\0'; if(li>0)Theme::DrawText(line,(int)CX,(int)ty,Theme::FS_BODY,Theme::TXT_PRI);

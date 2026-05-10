@@ -4,3 +4,4 @@
 4,Baligh Ur Rehman Amir,Cardiology,11111111111,skibidi,670
 5,Ayyan Tarar,Cardiology,88888888888,godzilla,1200
 6,Muhammad Hafeez,Spin Bowling,99999999999,worldcup,2000
+7,Faryal Nasheem,Cry,67676767676,skibidi,6670
