@@ -1,0 +1,15 @@
+--- DISCHARGED PATIENT: Muhammad Ibraheem Tarar (ID: 4) ---
+------------------------------------------
+
+--- DISCHARGED PATIENT: Ahmed Ali (ID: 1) ---
+------------------------------------------
+
+--- DISCHARGED PATIENT: Sara Malik (ID: 2) ---
+------------------------------------------
+
+--- DISCHARGED PATIENT: Muhammad Ayyan Tarar (ID: 6) ---
+------------------------------------------
+
+--- DISCHARGED PATIENT: Muhammad Ibraheem Tarar (ID: 5) ---
+------------------------------------------
+

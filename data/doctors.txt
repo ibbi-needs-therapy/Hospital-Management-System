@@ -1,0 +1,6 @@
+1,Dr. Sara Khan,Cardiology,03111234567,doc456,1500.00
+2,Dr. Ali Raza,Neurology,03211234567,doc789,2000.00
+3,Murteza Ali,Respiratory,03030303030,ronaldo,3000
+4,Baligh Ur Rehman Amir,Cardiology,11111111111,skibidi,670
+5,Ayyan Tarar,Cardiology,88888888888,godzilla,1200
+6,Muhammad Hafeez,Spin Bowling,99999999999,worldcup,2000
